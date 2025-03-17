@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: smsuser
+      POSTGRES_PASSWORD: smspassword
+      POSTGRES_DB: smsprocessor
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DB_USER: smsuser
+      DB_PASS: smspassword
+      DB_NAME: smsprocessor
+      DB_HOST: postgres
+      DB_PORT: 5432
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+    command: ["npm", "run", "dev"]
+
+volumes:
+  pgdata:
