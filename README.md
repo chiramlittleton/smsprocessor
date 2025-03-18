@@ -69,7 +69,7 @@ for i in {1..6}; do
     "to": "+0987654321",
     "message": "Message $i"
   }' http://localhost:5050/api/messages
-  sleep 10; # Wait 10 seconds between messages
+  sleep 12; 
 done
 ```
 The 6th message should be rate-limited.
