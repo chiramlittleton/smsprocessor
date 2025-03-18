@@ -1,4 +1,4 @@
-name: Build, Test, and Push Docker Image
+name: Build, Test, and Push Docker Image (macOS ARM64)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-test-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest #keep ubuntu, arm64 builds fine on ubuntu.
 
     steps:
       - name: Checkout Repository
@@ -24,7 +24,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          platforms: linux/amd64,linux/arm64 # Add platforms here
+          platforms: linux/arm64 # build only arm64
 
       - name: Build Backend Docker Image
         uses: docker/build-push-action@v5
@@ -33,7 +33,7 @@ jobs:
           file: ./backend/Dockerfile
           load: true
           tags: smsprocessor-backend:test
-          platforms: linux/amd64,linux/arm64 # Add platforms here
+          platforms: linux/arm64
 
       - name: Run Backend Tests in Docker Container
         run: |
@@ -46,7 +46,7 @@ jobs:
           file: ./frontend/Dockerfile
           load: true
           tags: smsprocessor-frontend:test
-          platforms: linux/amd64,linux/arm64 # Add platforms here
+          platforms: linux/arm64
 
       - name: Push Backend Docker Image (Only if tests pass)
         if: success()
@@ -55,8 +55,8 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor:latest #changed tag here
-          platforms: linux/amd64,linux/arm64 # Add platforms here
+          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor:latest #Changed tag
+          platforms: linux/arm64
 
       - name: Push Frontend Docker Image (Only if tests pass)
         if: success()
@@ -66,4 +66,4 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor-frontend:latest
-          platforms: linux/amd64,linux/arm64 # Add platforms here
+          platforms: linux/arm64
