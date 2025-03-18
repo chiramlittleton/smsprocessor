@@ -1,7 +1,6 @@
-version: "3.8"
 services:
-  postgres:
-    image: postgres:latest
+  db:
+    image: postgres:17  # ✅ Use PostgreSQL 17 as originally intended
     restart: always
     environment:
       POSTGRES_USER: smsuser
@@ -11,24 +10,42 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - sms_network
 
   backend:
-    build: .
+    build: ./backend
     restart: always
     depends_on:
-      - postgres
+      - db
     environment:
       DB_USER: smsuser
       DB_PASS: smspassword
       DB_NAME: smsprocessor
-      DB_HOST: postgres
+      DB_HOST: db
       DB_PORT: 5432
-      PORT: 3000
+      PORT: 5050
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./backend:/usr/src/app  # ✅ Keep the volume, but ensure server.js is in /usr/src/app
+    command: ["node", "/usr/src/app/src/server.js"]
+    networks:
+      - sms_network
+
+  frontend:
+    build: ./frontend
+    restart: always
+    depends_on:
+      - backend
     ports:
       - "3000:3000"
-    volumes:
-      - .:/usr/src/app
-    command: ["npm", "run", "dev"]
+    networks:
+      - sms_network
 
 volumes:
   pgdata:
+
+networks:
+  sms_network:
+    driver: bridge
