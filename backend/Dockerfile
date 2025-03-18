@@ -4,9 +4,9 @@ FROM node:18
 # Set the working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and install ALL dependencies (including dev dependencies for tests)
+# Copy package.json and install ALL dependencies (including Jest for testing)
 COPY package.json package-lock.json ./
-RUN npm ci # ✅ Installs all dependencies, including Jest for testing
+RUN npm install  # ✅ Install Jest & all devDependencies
 
 # Copy the entire backend source code
 COPY . .
@@ -14,14 +14,8 @@ COPY . .
 # Debug: List all files in the container after copying
 RUN ls -la /usr/src/app
 
-# Run tests inside the container
-RUN npm test # ✅ Run tests before the final build
-
-# Remove dev dependencies after tests (keep only production dependencies)
-RUN npm prune --production
-
 # Expose backend port
 EXPOSE 5050
 
-# Start the server
+# Default CMD for running the app
 CMD ["node", "/usr/src/app/server.js"]

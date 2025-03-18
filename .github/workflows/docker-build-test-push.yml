@@ -34,7 +34,7 @@ jobs:
 
       - name: Run Backend Tests in Docker Container
         run: |
-          docker run --rm smsprocessor-backend:test npm test
+          docker run --rm smsprocessor-backend:test npx jest --coverage
 
       - name: Build Frontend Docker Image
         uses: docker/build-push-action@v5
