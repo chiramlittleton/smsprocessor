@@ -36,8 +36,17 @@ jobs:
           platforms: linux/arm64
 
       - name: Run Backend Tests in Docker Container
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          load: true
+          tags: smsprocessor-backend:test-amd64 #change the test tag.
+          platforms: linux/amd64 #build the test image as an amd64 image.
+
+      - name: Run Backend Tests in Docker Container
         run: |
-          docker run --rm smsprocessor-backend:test npx jest --coverage
+          docker run --rm smsprocessor-backend:test-amd64 npx jest --coverage
 
       - name: Build Frontend Docker Image
         uses: docker/build-push-action@v5
