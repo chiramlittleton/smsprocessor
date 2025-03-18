@@ -1,16 +1,15 @@
 const db = require("../models/database");
+const pDebounce = require("p-debounce"); // ✅ Use require() directly
 
-// ✅ Save a new message
-async function saveMessage(from, to, message) {
+const saveMessage = pDebounce(async (from, to, message) => {
   const query = `
     INSERT INTO sms_messages ("from", "to", message, status)
     VALUES ($/from/, $/to/, $/message/, 'received')
     RETURNING *;
   `;
   return db.one(query, { from, to, message });
-}
+}, 2000, { leading: true });
 
-// ✅ Fetch messages with filters and pagination
 async function fetchMessages({ from, to, status, limit = 10, offset = 0 }) {
   let conditions = [];
   let params = {};
@@ -39,18 +38,4 @@ async function fetchMessages({ from, to, status, limit = 10, offset = 0 }) {
   return db.any(query, { ...params, limit, offset });
 }
 
-// ✅ Check for duplicate message sent within 2 seconds
-async function isDuplicateMessage(from, to, message) {
-  const query = `
-    SELECT COUNT(*) 
-    FROM sms_messages
-    WHERE "from" = $/from/
-    AND "to" = $/to/
-    AND message = $/message/
-    AND received_at >= NOW() - INTERVAL '2 seconds';
-  `;
-  const result = await db.one(query, { from, to, message });
-  return parseInt(result.count) > 0;
-}
-
-module.exports = { saveMessage, fetchMessages, isDuplicateMessage };
+module.exports = { saveMessage, fetchMessages };

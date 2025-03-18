@@ -1,20 +1,21 @@
 const request = require("supertest");
 const express = require("express");
 const messageRoutes = require("../../src/routes/messageRoutes");
-const { handleIncomingMessage, getMessages } = require("../../src/controllers/messageController");
+const { sendMessage, getMessages, getMediaForMessage } = require("../../src/controllers/messageController");
 const { validateMessage } = require("../../src/middleware/validation");
 
 // ✅ Mock dependencies
 jest.mock("../../src/controllers/messageController", () => ({
-  handleIncomingMessage: jest.fn((req, res) => res.status(201).json({ success: true })),
+  sendMessage: jest.fn((req, res) => res.status(201).json({ success: true, id: "12345" })),
   getMessages: jest.fn((req, res) => res.status(200).json([{ id: "1", message: "Hello" }])),
+  getMediaForMessage: jest.fn((req, res) => res.status(200).json({ media: [{ file_path: "/uploads/image1.jpg" }] })),
 }));
 
 jest.mock("../../src/middleware/validation", () => ({
   validateMessage: jest.fn((req, res, next) => next()),
 }));
 
-// ✅ Fix: Define mock inline inside `jest.mock()`
+// ✅ Fix: Define rate limiter mock inline
 jest.mock("../../src/middleware/rateLimiter", () => (req, res, next) => {
   if (req.body.message === "Spam!") {
     return res.status(429).json({ error: "Rate limit exceeded" });
@@ -40,7 +41,7 @@ describe("Message Routes", () => {
     });
 
     expect(validateMessage).toHaveBeenCalled(); // ✅ Validation middleware executed
-    expect(handleIncomingMessage).toHaveBeenCalled(); // ✅ Controller was reached
+    expect(sendMessage).toHaveBeenCalled(); // ✅ Controller was reached
   });
 
   // 🚫 Test: Validation should block invalid requests before reaching controller
@@ -55,7 +56,7 @@ describe("Message Routes", () => {
     });
 
     expect(res.statusCode).toBe(400);
-    expect(handleIncomingMessage).not.toHaveBeenCalled(); // ❌ Controller should NOT be called
+    expect(sendMessage).not.toHaveBeenCalled(); // ❌ Controller should NOT be called
   });
 
   // ✅ Test: GET `/messages` should call `getMessages` controller
@@ -65,6 +66,22 @@ describe("Message Routes", () => {
     expect(getMessages).toHaveBeenCalled();
     expect(res.statusCode).toBe(200);
   });
+
+  // ✅ New Test: GET `/messages/:id/media` should call `getMediaForMessage`
+// ✅ Test: GET `/messages/:id/media` should call `getMediaForMessage`
+it("should call getMediaForMessage controller on GET /messages/:id/media", async () => {
+  const res = await request(app).get("/messages/12345/media");
+
+  // ✅ Fix: Expect Jest mock to handle req/res format correctly
+  expect(getMediaForMessage).toHaveBeenCalledWith(
+    expect.objectContaining({ params: expect.objectContaining({ id: "12345" }) }), // ✅ Fix: Match object structure
+    expect.any(Object), // ✅ Matches Express response object
+    expect.any(Function) // ✅ Ensure `next()` is included
+  );
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body).toEqual({ media: [{ file_path: "/uploads/image1.jpg" }] });
+});
 
   // 🚫 Test: Rate limiter should prevent excessive requests before validation
   it("should block excessive requests before hitting validation", async () => {
@@ -77,6 +94,6 @@ describe("Message Routes", () => {
     expect(res.statusCode).toBe(429);
     expect(res.body.error).toBe("Rate limit exceeded");
     expect(validateMessage).not.toHaveBeenCalled(); // ❌ Validation shouldn't run if rate-limited
-    expect(handleIncomingMessage).not.toHaveBeenCalled(); // ❌ Controller shouldn't be reached
+    expect(sendMessage).not.toHaveBeenCalled(); // ❌ Controller shouldn't be reached
   });
 });

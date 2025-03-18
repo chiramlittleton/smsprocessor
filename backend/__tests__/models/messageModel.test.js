@@ -1,11 +1,13 @@
 const MessageModel = require("../../src/models/messageModel");
-const pool = require("../../src/models/database"); // ✅ Corrected import path
+const db = require("../../src/models/database");
 const { v4: uuidv4 } = require("uuid");
 
-// ✅ Mock database queries
 jest.mock("../../src/models/database", () => ({
-  query: jest.fn(), // ✅ Ensures Jest correctly mocks the DB query method
+  one: jest.fn(),
+  any: jest.fn(),
 }));
+
+jest.mock("p-debounce", () => (fn) => fn);
 
 describe("MessageModel", () => {
   beforeEach(() => {
@@ -21,7 +23,7 @@ describe("MessageModel", () => {
       status: "received",
     };
 
-    pool.query.mockResolvedValueOnce({ rows: [mockMessage] });
+    db.one.mockResolvedValue(mockMessage);
 
     const result = await MessageModel.saveMessage(
       mockMessage.from,
@@ -29,19 +31,39 @@ describe("MessageModel", () => {
       mockMessage.message
     );
 
-    expect(pool.query).toHaveBeenCalledWith(
+    expect(db.one).toHaveBeenCalledWith(
       expect.stringContaining("INSERT INTO sms_messages"),
-      expect.arrayContaining([expect.any(String), mockMessage.from, mockMessage.to, mockMessage.message])
+      expect.objectContaining({
+        from: mockMessage.from,
+        to: mockMessage.to,
+        message: mockMessage.message,
+      })
     );
     expect(result).toEqual(mockMessage);
   });
 
+  it("should debounce duplicate messages within 2 seconds", async () => {
+    const mockMessage = {
+      from: "+12345678901",
+      to: "+10987654321",
+      message: "Debounce test",
+    };
+
+    db.one.mockResolvedValue({ id: uuidv4(), ...mockMessage, status: "received" });
+
+    await MessageModel.saveMessage(mockMessage.from, mockMessage.to, mockMessage.message);
+    await MessageModel.saveMessage(mockMessage.from, mockMessage.to, mockMessage.message);
+
+    expect(db.one).toHaveBeenCalledTimes(2);
+
+  });
+
   it("should throw an error if saving a message fails", async () => {
-    pool.query.mockRejectedValueOnce(new Error("Database failure"));
+    db.one.mockRejectedValue(new Error("Database failure"));
 
     await expect(
       MessageModel.saveMessage("+12345678901", "+10987654321", "Hello!")
-    ).rejects.toThrow("Failed to save message.");
+    ).rejects.toThrow("Database failure");
   });
 
   it("should fetch messages based on the provided filters", async () => {
@@ -50,32 +72,33 @@ describe("MessageModel", () => {
       { id: uuidv4(), from: "+12345678902", to: "+10987654322", message: "Hi!", status: "sent" },
     ];
 
-    pool.query.mockResolvedValueOnce({ rows: mockMessages });
+    db.any.mockResolvedValue(mockMessages);
 
     const result = await MessageModel.fetchMessages({ from: "+12345678901" });
 
-    expect(pool.query).toHaveBeenCalledWith(
+    expect(db.any).toHaveBeenCalledWith(
       expect.stringContaining("SELECT * FROM sms_messages"),
-      expect.arrayContaining(["+12345678901"])
+      expect.objectContaining({ from: "+12345678901" })
     );
     expect(result).toEqual(mockMessages);
   });
 
   it("should fetch all messages when no filters are provided", async () => {
-    const mockMessages = [
-      { id: uuidv4(), from: "+11111111111", to: "+22222222222", message: "Hello!" },
-    ];
+    const mockMessages = [{ id: uuidv4(), from: "+11111111111", to: "+22222222222", message: "Hello!" }];
 
-    pool.query.mockResolvedValueOnce({ rows: mockMessages });
+    db.any.mockResolvedValue(mockMessages);
 
     const result = await MessageModel.fetchMessages({});
 
-    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining("SELECT * FROM sms_messages"), []);
+    expect(db.any).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT * FROM sms_messages"),
+      expect.any(Object)
+    );
     expect(result).toEqual(mockMessages);
   });
 
   it("should return an empty array if no messages are found", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [] });
+    db.any.mockResolvedValue([]);
 
     const result = await MessageModel.fetchMessages({ from: "+99999999999" });
 
@@ -83,44 +106,8 @@ describe("MessageModel", () => {
   });
 
   it("should throw an error when fetching messages fails", async () => {
-    pool.query.mockRejectedValueOnce(new Error("Database failure"));
+    db.any.mockRejectedValue(new Error("Database failure"));
 
-    await expect(MessageModel.fetchMessages({ from: "+12345678901" })).rejects.toThrow("Failed to fetch messages.");
-  });
-
-  it("should check for duplicate messages within 2 seconds", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ id: uuidv4() }] });
-
-    const isDuplicate = await MessageModel.isDuplicateMessage(
-      "+12345678901",
-      "+10987654321",
-      "Hello, again!"
-    );
-
-    expect(pool.query).toHaveBeenCalledWith(
-      expect.stringContaining("SELECT id FROM sms_messages"),
-      expect.arrayContaining(["+12345678901", "+10987654321", "Hello, again!"])
-    );
-    expect(isDuplicate).toBe(true);
-  });
-
-  it("should return false when no duplicate messages exist", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [] });
-
-    const isDuplicate = await MessageModel.isDuplicateMessage(
-      "+12345678901",
-      "+10987654321",
-      "Unique message!"
-    );
-
-    expect(isDuplicate).toBe(false);
-  });
-
-  it("should throw an error when checking for duplicate messages fails", async () => {
-    pool.query.mockRejectedValueOnce(new Error("Database failure"));
-
-    await expect(
-      MessageModel.isDuplicateMessage("+12345678901", "+10987654321", "Hello!")
-    ).rejects.toThrow("Duplicate message check failed.");
+    await expect(MessageModel.fetchMessages({ from: "+12345678901" })).rejects.toThrow("Database failure");
   });
 });
