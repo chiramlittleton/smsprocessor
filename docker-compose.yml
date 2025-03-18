@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17  # ✅ Use PostgreSQL 17 as originally intended
+    image: postgres:17  
     restart: always
     environment:
       POSTGRES_USER: smsuser
@@ -14,6 +14,7 @@ services:
       - sms_network
 
   backend:
+    image: chiramlittleton/smsprocessor-backend:latest  
     build: ./backend
     restart: always
     depends_on:
@@ -28,12 +29,13 @@ services:
     ports:
       - "5050:5050"
     volumes:
-      - ./backend:/usr/src/app  # ✅ Keep the volume, but ensure server.js is in /usr/src/app
+      - ./backend:/usr/src/app  
     command: ["node", "/usr/src/app/src/server.js"]
     networks:
       - sms_network
 
   frontend:
+    image: chiramlittleton/smsprocessor-frontend:latest  
     build: ./frontend
     restart: always
     depends_on:
