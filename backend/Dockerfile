@@ -4,14 +4,17 @@ FROM node:18
 # Set working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first to leverage Docker caching
+# Copy package.json and package-lock.json first to leverage Docker layer caching
 COPY package.json package-lock.json ./
 
-# Install dependencies (including express)
-RUN npm install --production
+# Ensure dependencies are installed (including express)
+RUN npm install --omit=dev  # ✅ Removes unnecessary dev dependencies
 
 # Copy the rest of the backend source code
 COPY . .
+
+# Debug: Ensure node_modules exist inside the container
+RUN ls -la /usr/src/app/node_modules
 
 # Expose backend port
 EXPOSE 5050
