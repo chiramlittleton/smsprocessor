@@ -24,23 +24,40 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Image
+      - name: Build Backend Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
-          load: true # Load the image locally for testing
-          tags: smsprocessor:test
+          context: ./backend  # ✅ Adjusted path to backend
+          file: ./backend/Dockerfile
+          load: true
+          tags: smsprocessor-backend:test
 
-      - name: Run Tests in Docker Container
+      - name: Run Backend Tests in Docker Container
         run: |
-          docker run --rm smsprocessor:test npm test
+          docker run --rm smsprocessor-backend:test npm test
 
-      - name: Push Docker Image (Only if tests pass)
+      - name: Build Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend  # ✅ Adjusted path to frontend
+          file: ./frontend/Dockerfile
+          load: true
+          tags: smsprocessor-frontend:test
+
+      - name: Push Backend Docker Image (Only if tests pass)
         if: success()
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor-backend:latest
+
+      - name: Push Frontend Docker Image (Only if tests pass)
+        if: success()
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor-frontend:latest
