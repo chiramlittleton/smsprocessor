@@ -1,0 +1,18 @@
+#!/bin/sh
+
+echo "🔍 Running Pre-Commit Hook: Linting & Formatting"
+
+# Run ESLint
+# npx eslint --fix .
+
+# Run Prettier
+npx prettier --write .
+
+# Check for changes after auto-fix
+if ! git diff --quiet; then
+    echo "❌ Formatting or linting issues fixed. Please review changes and re-commit."
+    exit 1
+fi
+
+echo "✅ All checks passed. Proceeding with commit."
+

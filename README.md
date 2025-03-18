@@ -5,6 +5,7 @@ A **scalable SMS processing and querying backend** using **Node.js** and **Postg
 ---
 
 ## 🚀 Features
+
 - 📩 **REST API** for sending and retrieving SMS messages
 - 🔒 **Rate-limiting** (max 5 messages per minute per sender)
 - 🚫 **Deduplication** (prevents duplicate messages within 2 seconds)
@@ -17,28 +18,35 @@ A **scalable SMS processing and querying backend** using **Node.js** and **Postg
 ## 🛠️ Installation (Using Docker)
 
 ### **1️⃣ Pull the Docker Image**
+
 ```bash
 docker pull chiramlittleton/smsprocessor:latest
 ```
 
 ### **2️⃣ Start a PostgreSQL Container**
+
 Ensure PostgreSQL is running before starting the application.
+
 ```bash
 docker run --name smsprocessor-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=smsprocessor -p 5432:5432 -d postgres
 ```
 
 ### **3️⃣ Run Database Migrations**
+
 Run migrations inside the container (if applicable):
+
 ```bash
 docker run --rm --network host chiramlittleton/smsprocessor:latest npm run migrate
 ```
 
 ### **4️⃣ Start the SMSProcessor Container**
+
 ```bash
 docker run --name smsprocessor-api --network host -e DATABASE_URL="postgres://user:password@localhost:5432/smsprocessor" -p 3000:3000 -d chiramlittleton/smsprocessor:latest
 ```
 
 ### **5️⃣ Check If the Service is Running**
+
 ```bash
 curl http://localhost:3000/health
 ```
@@ -46,6 +54,7 @@ curl http://localhost:3000/health
 ---
 
 ## 🏗️ Architecture
+
 ```mermaid
 graph TD;
     User-->API[SMSProcessor API];
@@ -61,7 +70,9 @@ graph TD;
 ## 📡 API Endpoints
 
 ### **1️⃣ Send SMS**
+
 #### **POST** `/api/messages`
+
 ```json
 {
   "from": "+1234567890",
@@ -69,7 +80,9 @@ graph TD;
   "message": "Hello, world!"
 }
 ```
+
 📌 **Validation**
+
 - Phone numbers must follow **E.164 format** (`+<country_code><number>`)
 - Messages **cannot exceed 160 characters**
 - **Rate-limiting** applies (5 messages per minute per sender)
@@ -77,8 +90,11 @@ graph TD;
 ---
 
 ### **2️⃣ Query Messages**
+
 #### **GET** `/api/messages?from=+1234567890&to=+0987654321`
+
 📌 **Query Parameters**
+
 - `from` → Filter by sender
 - `to` → Filter by recipient
 - `status` → Filter by message status
@@ -86,6 +102,7 @@ graph TD;
 - `offset` → Offset for pagination
 
 📌 **Example Response**
+
 ```json
 [
   {
@@ -102,8 +119,11 @@ graph TD;
 ---
 
 ### **3️⃣ Upload Media Attachment**
+
 #### **POST** `/api/messages/:id/media`
+
 📌 **Supported File Types**: `.png, .jpg, .jpeg`
+
 ```bash
 curl -X POST -F "file=@image.png" http://localhost:3000/api/messages/uuid-1234/media
 ```
@@ -111,7 +131,9 @@ curl -X POST -F "file=@image.png" http://localhost:3000/api/messages/uuid-1234/m
 ---
 
 ## 🛠️ Running Tests
+
 Run the unit tests (mocks database calls):
+
 ```bash
 docker run --rm chiramlittleton/smsprocessor:latest npm test
 ```
@@ -119,11 +141,15 @@ docker run --rm chiramlittleton/smsprocessor:latest npm test
 ---
 
 ## 🛠️ Stopping & Removing Containers
+
 Stop the running containers:
+
 ```bash
 docker stop smsprocessor-api smsprocessor-db
 ```
+
 Remove containers:
+
 ```bash
 docker rm smsprocessor-api smsprocessor-db
 ```
@@ -131,11 +157,12 @@ docker rm smsprocessor-api smsprocessor-db
 ---
 
 ## 📜 License
+
 This project is licensed under the **MIT License**.
 
 ---
 
 ## 📬 Contact
+
 For any issues or questions, open an issue in the repository:  
 [GitHub Issues](https://github.com/chiramlittleton/smsprocessor/issues)
-
