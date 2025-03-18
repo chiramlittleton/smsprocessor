@@ -3,11 +3,13 @@
 This guide provides the quickest way to run the SMSProcessor application using Docker Compose for review purposes.
 
 ## Steps
-1. **Clone the Repository
-```bash
-git clone https://github.com/chiramlittleton/smsprocessor.git
-cd smsprocessor
-```
+
+1. **Clone the Repository**
+
+  ```bash
+  git clone https://github.com/chiramlittleton/smsprocessor.git
+  cd smsprocessor
+  ```
 
 1.  **Run Docker Compose:**
 
