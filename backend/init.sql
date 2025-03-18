@@ -11,8 +11,10 @@ CREATE TABLE IF NOT EXISTS sms_messages (
 -- Create media_attachments table if it doesn't exist
 CREATE TABLE IF NOT EXISTS media_attachments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    message_id UUID REFERENCES sms_messages(id) ON DELETE CASCADE,
+    message_id UUID NOT NULL REFERENCES sms_messages(id) ON DELETE CASCADE, -- ✅ Ensure media is always linked to a message
     file_path TEXT NOT NULL,
+    file_type VARCHAR(50) CHECK (file_type IN ('image/jpeg', 'image/png', 'image/gif')), -- ✅ Track file type (images only)
+    file_size INTEGER NOT NULL CHECK (file_size > 0), -- ✅ Track file size
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(file_path) -- Prevent duplicate uploads
+    UNIQUE(message_id, file_path) -- ✅ Ensure no duplicate files for the same message
 );
