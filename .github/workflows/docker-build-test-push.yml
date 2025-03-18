@@ -23,14 +23,17 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64 # Add platforms here
 
       - name: Build Backend Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend  # ✅ Adjusted path to backend
+          context: ./backend
           file: ./backend/Dockerfile
           load: true
           tags: smsprocessor-backend:test
+          platforms: linux/amd64,linux/arm64 # Add platforms here
 
       - name: Run Backend Tests in Docker Container
         run: |
@@ -39,10 +42,11 @@ jobs:
       - name: Build Frontend Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend  # ✅ Adjusted path to frontend
+          context: ./frontend
           file: ./frontend/Dockerfile
           load: true
           tags: smsprocessor-frontend:test
+          platforms: linux/amd64,linux/arm64 # Add platforms here
 
       - name: Push Backend Docker Image (Only if tests pass)
         if: success()
@@ -51,7 +55,8 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor-backend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor:latest #changed tag here
+          platforms: linux/amd64,linux/arm64 # Add platforms here
 
       - name: Push Frontend Docker Image (Only if tests pass)
         if: success()
@@ -61,3 +66,4 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/smsprocessor-frontend:latest
+          platforms: linux/amd64,linux/arm64 # Add platforms here
