@@ -1,168 +1,81 @@
-# 📡 SMSProcessor
+# 🚀 SMSProcessor - Quick Review Setup
 
-A **scalable SMS processing and querying backend** using **Node.js** and **PostgreSQL**. This service allows users to send, store, and retrieve SMS messages, ensuring **rate-limiting**, **deduplication**, and **media attachments**.
+This guide provides the quickest way to run the SMSProcessor application using Docker Compose for review purposes.
 
----
+## Steps
 
-## 🚀 Features
+1.  **Download `docker-compose.yml`:**
 
-- 📩 **REST API** for sending and retrieving SMS messages
-- 🔒 **Rate-limiting** (max 5 messages per minute per sender)
-- 🚫 **Deduplication** (prevents duplicate messages within 2 seconds)
-- 📂 **Media attachment support** (image uploads)
-- 📊 **Pagination** for querying messages
-- 🐳 **Dockerized Deployment**
+    * Download the `docker-compose.yml` file directly from this link: [https://github.com/chiramlittleton/smsprocessor/blob/main/docker-compose.yml](https://github.com/chiramlittleton/smsprocessor/blob/main/docker-compose.yml)
+    * Save it to a directory on your local machine.
 
----
+2.  **Run Docker Compose:**
 
-## 🛠️ Installation (Using Docker)
+    * Open a terminal or command prompt.
+    * Navigate to the directory where you saved the `docker-compose.yml` file.
+    * Run the command:
 
-### **1️⃣ Pull the Docker Image**
+        ```bash
+        docker-compose up -d
+        ```
+
+3.  **Access the Application:**
+
+    * Open a web browser and access the application at:
+
+        * Frontend: `http://localhost:3000`
+        * Backend API: `http://localhost:5050/api/...`
+
+4.  **Stop the Application:**
+
+    * When finished, run:
+
+        ```bash
+        docker-compose down
+        ```
+
+**Note:**
+
+* This assumes you have Docker and Docker Compose installed.
+* This setup uses pre-built Docker images from Docker Hub. Ensure you have network access to pull the images.
+* If database migrations are needed, please refer to the project's main documentation for those steps.
+
+## Testing with cURL
+
+After starting the application, you can use the following cURL commands to test various functionalities:
+
+### 1. Send a Message:
 
 ```bash
-docker pull chiramlittleton/smsprocessor:latest
-```
-
-### **2️⃣ Start a PostgreSQL Container**
-
-Ensure PostgreSQL is running before starting the application.
-
-```bash
-docker run --name smsprocessor-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=smsprocessor -p 5432:5432 -d postgres
-```
-
-### **3️⃣ Run Database Migrations**
-
-Run migrations inside the container (if applicable):
-
-```bash
-docker run --rm --network host chiramlittleton/smsprocessor:latest npm run migrate
-```
-
-### **4️⃣ Start the SMSProcessor Container**
-
-```bash
-docker run --name smsprocessor-api --network host -e DATABASE_URL="postgres://user:password@localhost:5432/smsprocessor" -p 3000:3000 -d chiramlittleton/smsprocessor:latest
-```
-
-### **5️⃣ Check If the Service is Running**
-
-```bash
-curl http://localhost:3000/health
-```
-
----
-
-## 🏗️ Architecture
-
-```mermaid
-graph TD;
-    User-->API[SMSProcessor API];
-    API-->DB[PostgreSQL Database];
-    API-->Storage[Local Media Storage];
-    API-->RateLimiter[Rate Limiter];
-    API-->Deduplication[Duplicate Check];
-    API-->Validation[Input Validation];
-```
-
----
-
-## 📡 API Endpoints
-
-### **1️⃣ Send SMS**
-
-#### **POST** `/api/messages`
-
-```json
-{
+curl -X POST -H "Content-Type: application/json" -d '{
   "from": "+1234567890",
   "to": "+0987654321",
-  "message": "Hello, world!"
-}
-```
+  "message": "Hello from cURL!"
+}' http://localhost:5050/api/messages
 
-📌 **Validation**
-
-- Phone numbers must follow **E.164 format** (`+<country_code><number>`)
-- Messages **cannot exceed 160 characters**
-- **Rate-limiting** applies (5 messages per minute per sender)
-
----
-
-### **2️⃣ Query Messages**
-
-#### **GET** `/api/messages?from=+1234567890&to=+0987654321`
-
-📌 **Query Parameters**
-
-- `from` → Filter by sender
-- `to` → Filter by recipient
-- `status` → Filter by message status
-- `limit` → Limit number of results per page (default: 10)
-- `offset` → Offset for pagination
-
-📌 **Example Response**
-
-```json
-[
-  {
-    "id": "uuid-1234",
-    "from": "+1234567890",
-    "to": "+0987654321",
-    "message": "Hello, world!",
-    "status": "received",
-    "received_at": "2025-03-17T10:00:00.000Z"
-  }
-]
-```
-
----
-
-### **3️⃣ Upload Media Attachment**
-
-#### **POST** `/api/messages/:id/media`
-
-📌 **Supported File Types**: `.png, .jpg, .jpeg`
+### 1. Send a Message:
 
 ```bash
-curl -X POST -F "file=@image.png" http://localhost:3000/api/messages/uuid-1234/media
-```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "from": "+1234567890",
+  "to": "+0987654321",
+  "message": "Hello from cURL!"
+}' http://localhost:5050/api/messages
 
----
-
-## 🛠️ Running Tests
-
-Run the unit tests (mocks database calls):
-
-```bash
-docker run --rm chiramlittleton/smsprocessor:latest npm test
-```
-
----
-
-## 🛠️ Stopping & Removing Containers
-
-Stop the running containers:
+### 1. Send a Message:
 
 ```bash
-docker stop smsprocessor-api smsprocessor-db
-```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "from": "+1234567890",
+  "to": "+0987654321",
+  "message": "Hello from cURL!"
+}' http://localhost:5050/api/messages
 
-Remove containers:
+### 1. Send a Message:
 
 ```bash
-docker rm smsprocessor-api smsprocessor-db
-```
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
-
----
-
-## 📬 Contact
-
-For any issues or questions, open an issue in the repository:  
-[GitHub Issues](https://github.com/chiramlittleton/smsprocessor/issues)
+curl -X POST -H "Content-Type: application/json" -d '{
+  "from": "+1234567890",
+  "to": "+0987654321",
+  "message": "Hello from cURL!"
+}' http://localhost:5050/api/messages
