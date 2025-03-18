@@ -3,7 +3,12 @@
 This guide provides the quickest way to run the SMSProcessor application using Docker Compose for review purposes.
 
 ## Steps
+1. **Pull the Docker images:**
 
+   ```bash
+   docker pull chiramlittleton/smsprocessor:latest
+   docker pull chiramlittleton/smsprocessor-frontend:latest
+   
 1.  **Download `docker-compose.yml`:**
 
     * Download the `docker-compose.yml` file directly from this link: [https://raw.githubusercontent.com/chiramlittleton/smsprocessor/main/docker-compose.yml
@@ -11,7 +16,7 @@ This guide provides the quickest way to run the SMSProcessor application using D
 )
     * Save it to a directory on your local machine.
 
-2.  **Run Docker Compose:**
+1.  **Run Docker Compose:**
 
     * Open a terminal or command prompt.
     * Navigate to the directory where you saved the `docker-compose.yml` file.
@@ -21,14 +26,14 @@ This guide provides the quickest way to run the SMSProcessor application using D
         docker-compose up -d
         ```
 
-3.  **Access the Application:**
+1.  **Access the Application:**
 
     * Open a web browser and access the application at:
 
         * Frontend: `http://localhost:3000`
         * Backend API: `http://localhost:5050/api/...`
 
-4.  **Stop the Application:**
+1.  **Stop the Application:**
 
     * When finished, run:
 
