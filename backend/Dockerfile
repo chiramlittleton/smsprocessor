@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY package.json package-lock.json ./
 
 # Install dependencies (including express)
-RUN npm install --production
+RUN npm install
 
 # Copy the rest of the backend source code
 COPY . .
