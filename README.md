@@ -6,7 +6,9 @@ This guide provides the quickest way to run the SMSProcessor application using D
 
 1.  **Download `docker-compose.yml`:**
 
-    * Download the `docker-compose.yml` file directly from this link: [https://github.com/chiramlittleton/smsprocessor/blob/main/docker-compose.yml](https://github.com/chiramlittleton/smsprocessor/blob/main/docker-compose.yml)
+    * Download the `docker-compose.yml` file directly from this link: [https://raw.githubusercontent.com/chiramlittleton/smsprocessor/main/docker-compose.yml
+](https://raw.githubusercontent.com/chiramlittleton/smsprocessor/main/docker-compose.yml
+)
     * Save it to a directory on your local machine.
 
 2.  **Run Docker Compose:**
