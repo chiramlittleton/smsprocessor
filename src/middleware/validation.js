@@ -1,24 +1,18 @@
 const { body, validationResult } = require("express-validator");
 
-// Validation rules for incoming SMS messages
 const validateMessage = [
   body("from")
     .matches(/^\+\d{10,15}$/)
-    .withMessage(
-      "❌ Invalid sender number format (must follow E.164 standard)",
-    ),
+    .withMessage("Invalid sender number format"),
 
   body("to")
     .matches(/^\+\d{10,15}$/)
-    .withMessage(
-      "❌ Invalid recipient number format (must follow E.164 standard)",
-    ),
+    .withMessage("Invalid recipient number format"),
 
   body("message")
-    .isLength({ min: 1, max: 160 })
-    .withMessage("❌ Message must be between 1 and 160 characters"),
+    .isLength({ min: 1, max: 160 }) // ✅ Fix: Enforce max 160 characters
+    .withMessage("Message must be between 1 and 160 characters"),
 
-  // Middleware to handle validation results
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
