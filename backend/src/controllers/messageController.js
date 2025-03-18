@@ -98,4 +98,27 @@ const getMessages = async (req, res) => {
   }
 };
 
-module.exports = { sendMessage, getMessages };
+const getMediaForMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const media = await db.any(
+      `SELECT file_path, file_type, file_size, uploaded_at 
+       FROM media_attachments 
+       WHERE message_id = $/id/`,
+      { id }
+    );
+
+    if (!media.length) {
+      return res.status(404).json({ error: "No media found for this message" });
+    }
+
+    res.json({ messageId: id, media });
+  } catch (error) {
+    console.error("Error fetching media:", error);
+    res.status(500).json({ error: "Failed to retrieve media attachments" });
+  }
+};
+
+
+module.exports = { sendMessage, getMediaForMessage, getMessages };
