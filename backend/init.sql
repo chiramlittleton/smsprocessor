@@ -18,3 +18,10 @@ CREATE TABLE IF NOT EXISTS media_attachments (
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(message_id, file_path) -- ✅ Ensure no duplicate files for the same message
 );
+
+CREATE INDEX idx_sms_from ON sms_messages("from");
+CREATE INDEX idx_sms_to ON sms_messages("to");
+CREATE INDEX idx_sms_status ON sms_messages(status);
+CREATE INDEX idx_sms_received_at ON sms_messages(received_at);
+CREATE INDEX idx_media_message_id ON media_attachments(message_id);
+CREATE INDEX idx_media_file_path ON media_attachments(file_path);
