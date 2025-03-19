@@ -64,19 +64,19 @@ Replace /path/to/your/image.jpg with the actual path to an image file.
 
 ```bash
 for i in {1..6}; do
-  curl -X POST -H "Content-Type: application/json" -d '{
-    "from": "+1234567890",
-    "to": "+0987654321",
-    "message": "Message $i"
-  }' http://localhost:5050/api/messages
-  sleep 12; 
+  curl -X POST -H "Content-Type: application/json" -d "{
+    \"from\": \"+1234567890\",
+    \"to\": \"+0987654321\",
+    \"message\": \"Message $i\"
+  }" http://localhost:5050/api/messages
+  sleep 10;
 done
 ```
 The 6th message should be rate-limited.
 ### 4. Query Messages:
 
 ```bash
-curl "http://localhost:5050/api/messages?from=+1234567890&to=+0987654321&limit=2&offset=0"
+curl "http://localhost:5050/api/messages?from=%2B1234567890&to=%2B0987654321&limit=2&offset=0"
 ```
 Adjust from, to, limit, and offset as needed.
 
@@ -125,7 +125,7 @@ curl "http://localhost:5050/api/messages?from=+1234567890"
 curl "http://localhost:5050/api/messages?to=+0987654321"
 curl "http://localhost:5050/api/messages?status=received"
 curl "http://localhost:5050/api/messages?limit=5&offset=10"
-curl "http://localhost:5050/api/messages" # No filters
+curl "http://localhost:5050/api/messages" 
 ```
 ### 10. Media Attachment (Invalid File Type):
 ```bash
