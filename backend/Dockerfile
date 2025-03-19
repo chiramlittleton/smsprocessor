@@ -7,8 +7,8 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json first to leverage Docker layer caching
 COPY package.json package-lock.json ./
 
-# Ensure dependencies are installed (including express)
-RUN npm install --omit=dev  # ✅ Removes unnecessary dev dependencies
+# Install dependencies (including express)
+RUN npm install
 
 # Copy the rest of the backend source code
 COPY . .
